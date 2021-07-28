@@ -1,0 +1,5 @@
+https://stackoverflow.com/questions/1406029/how-to-calculate-the-volume-of-a-3d-mesh-object-the-surface-of-which-is-made-up
+https://github.com/openMVG/openMVG/issues/1596
+https://github.com/openMVG/openMVG/issues/1559
+https://en.wikipedia.org/wiki/PLY_(file_format)
+https://github.com/daavoo/pyntcloud
