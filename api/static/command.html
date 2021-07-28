@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1 id="myH1"></h1>
+<form action="http://127.0.0.1:5000/Output.zip">
+    <input type="submit" value="Download output files" />
+</form>
+<form action="http://127.0.0.1:5000">
+    <input type="submit" value="Reconstruct another 3D model" />
+</form>
+<br>
+<div id="data"></div>
+
+<script>
+if (!!window.EventSource) {
+  var source = new EventSource('/process');
+
+  source.onopen = function() {
+    document.getElementById("myH1").innerHTML = "Reconstructing 3D model...";
+  };
+
+  source.onmessage = function(event) {
+    document.getElementById("data").innerHTML = event.data + "<br>";
+  };
+} else {
+  document.getElementById("data").innerHTML = "Sorry, your browser does not support server-sent events...";
+}
+</script>
+<!-- <div id="data">nothing received yet</div> -->
+</body>
+</html>
