@@ -283,12 +283,16 @@ TextureMesh Scene_dense_mesh.mvs --resolution-level=2
 pip install opencv-python
 pip install Flask
 pip install Flask-Session
+pip install celery
+pip install redis
+pip install flower
+sudo apt-get install redis-server
 ```
 
-- Next, you need to export the ```PYTHONPATH``` so that the ```/openMVG/openMVG_Build/data/extract_frames``` can be found.
+- Next, you need to export the ```PYTHONPATH``` so that the ```/openMVG/openMVG_Build/data/extract_frames.py``` can be found.
 
 ```sh
-export PYTHONPATH=$PYTHONPATH:<Absolute path to the "data" folder storing extracted_frames.py>
+export PYTHONPATH=$PYTHONPATH:<Absolute path to the "data" folder storing extract_frames.py>
 ```
 
 For example:
