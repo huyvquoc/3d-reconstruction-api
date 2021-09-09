@@ -1,11 +1,13 @@
 import os
 import shutil
+import time
+import datetime
 
 import numpy as np
 import cv2
 
 
-def extract_frames_from_video(filename='video.mp4', input_path='./uploads', output_path='../openMVG/data/images',
+def extract_frames_from_video(filename='video.mp4', input_path='./uploads', output_path='../openMVG/data', images_folder='images',
                               type_of_extraction='whole_video', extraction_number=1, interleaved_number=1):
     print('[+] In extract_frames.py, print os.getcwd(): ', os.getcwd())
     vidcap = cv2.VideoCapture(os.path.join(input_path, filename))
@@ -14,7 +16,8 @@ def extract_frames_from_video(filename='video.mp4', input_path='./uploads', outp
 
     cwd = os.getcwd()
     os.chdir(output_path)
-    twd = os.getcwd()
+    os.makedirs(images_folder, exist_ok=True)
+    twd = os.path.join(os.getcwd(), images_folder)
     for filename in os.listdir(twd):
       file_path = os.path.join(twd, filename)
       try:

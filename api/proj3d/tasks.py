@@ -3,6 +3,7 @@ import subprocess
 import time
 import datetime
 import zipfile
+import shutil
 
 from .celery import app
 from extract_frames import extract_frames_from_video
@@ -16,7 +17,11 @@ def zipdir(path, ziph):
 @app.task()
 def reconstruct_3d_model(filename, type_of_extraction, extraction_number, interleaved_number, 
                         feature_quality, resolution_scale):
+    cur_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    images_folder_name = "".join(["images_", cur_time])
+    out_folder_name = "".join(["output_", cur_time])
     approx_focal = extract_frames_from_video(filename=filename,
+                                            images_folder=images_folder_name,
                                             type_of_extraction=type_of_extraction, 
                                             extraction_number=int(extraction_number), 
                                             interleaved_number=int(interleaved_number))
@@ -30,7 +35,7 @@ def reconstruct_3d_model(filename, type_of_extraction, extraction_number, interl
     os.chdir('./openMVG_Build/software/SfM')
     openmvg_path = "/media/data-huy/3D_Reconstruction/Github/openMVG"
     out_folder_name = "".join(["output_", datetime.datetime.now().strftime("%Y%m%d-%H%M%S")])
-    subprocess.run(['python', 'SfM_GlobalPipeline.py', os.path.join(openmvg_path, 'data', 'images'), 
+    subprocess.run(['python', 'SfM_GlobalPipeline.py', os.path.join(openmvg_path, 'data', images_folder_name),
                                                        os.path.join(openmvg_path, out_folder_name),
                                                        str(approx_focal),
                                                        str(feature_quality)])
@@ -56,6 +61,8 @@ def reconstruct_3d_model(filename, type_of_extraction, extraction_number, interl
     zipf = zipfile.ZipFile("".join([out_folder_name, '.zip']), 'w', zipfile.ZIP_DEFLATED)
     zipdir(out_folder_name, zipf)
     zipf.close()
+    os.chdir('data')
+    shutil.rmtree("".join(["./", images_folder_name]), ignore_errors=True)
     os.chdir(cwd)
 
     return "".join([out_folder_name, '.zip'])
