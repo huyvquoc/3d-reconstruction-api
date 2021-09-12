@@ -7,6 +7,7 @@ from flask import flash, request, redirect, url_for
 from flask import send_from_directory
 from flask import jsonify
 from werkzeug.utils import secure_filename
+from pathlib import Path
 
 from .tasks import make_file, reconstruct_3d_model
 
@@ -28,7 +29,7 @@ feature_quality = None
 resolution_scale = None
 approx_focal = None
 
-@bp.route("/")
+@bp.route("/index")
 def index():
     return "Hello!"
 
@@ -42,7 +43,7 @@ def allowed_file(filename):
     return '.' in filename and \
 	    filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@bp.route("/3d_reconstruction", methods=['GET', 'POST'])
+@bp.route("/", methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
         print('1')
@@ -94,17 +95,23 @@ def upload_file():
            #                    feature_quality, resolution_scale)
 
            # return redirect(url_for('process_3d'))
-           DOWNLOAD_FOLDER = os.getcwd()
-           # print('[+] DOWNLOAD_FOLDER: ', DOWNLOAD_FOLDER)
+           
            # app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
            # down_file = send_from_directory(app.config["DOWNLOAD_FOLDER"], 'Output.zip', as_attachment=True)
            # os.chdir(MAIN_WORKING_DIR)
 
            # return down_file
+
     return render_template('upload.html')
 
 @bp.route("/downloads/<path:filename>")
 def download_file(filename):
+    path = Path(os.getcwd())
+    print('[**] path: ', path)
+    parent_path = path.parent.absolute()
+    print('[**] parent_path: ', parent_path)
+    DOWNLOAD_FOLDER = os.path.join(parent_path, 'openMVG')
+    print('[**] DOWNLOAD_FOLDER: ', DOWNLOAD_FOLDER)
     return send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
 
 @bp.route("/reconstruct3dmodel/<string:filename>/<string:type_of_extraction>/<int:extraction_number>/<int:interleaved_number>/<string:feature_quality>/<int:resolution_scale>", methods=['POST'])
