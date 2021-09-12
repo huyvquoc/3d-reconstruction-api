@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<body>
+<title>3D Reconstruction</title>
+<h1>3D Reconstruction</h1>
+<form method=post enctype="multipart/form-data">
+  <input type=file name=file> <br><br>
+  <p>Choose type of frame extraction on the input video:</p>
+  <input type="radio" id="direct_number" name="frame_extraction" value="direct_number">
+  <label for="direct_number">First #n frames</label>
+  <input type="radio" id="interleaved_number" name="frame_extraction" value="interleaved_number">
+  <label for="direct_number">Interleaved frames</label>
+  <input type="radio" id="whole_video" name="frame_extraction" value="whole_video">
+  <label for="whole_video">Whole video</label> <br><br>
+  <label for="num_frames"> Specify the number of extracted frames (not necessary for "Whole video"):</label>
+  <!-- <input type="text" id="interleave" name="interleave"> <br><br> -->
+  <select id="num_frames" name="num_frames">
+    <!-- <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="12">12</option> -->
+  </select> <br><br>
+
+  <label for="interleave"> If "Interleaved frames", specify an interleaved number:</label>
+  <select id="interleave" name="interleave">
+  </select> <br><br>
+
+  <label for="feat">The level of feature quality:</label>
+  <!-- <input type="text" id="feat" name="feat"> <br><br> -->
+  <select id="feat" name="feat">
+    <option value="NORMAL">Normal</option>
+    <option value="HIGH">High</option>
+    <option value="ULTRA">Ultra</option>
+  </select> <br><br>
+  <label for="res">The resolution scale (for the TextureMesh stage):</label>
+  <!-- <input type="text" id="res" name="res"> <br><br> -->
+  <select id="res" name="res">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+  </select> <br><br>
+  <input type=submit value=Upload>	
+</form>
+
+<script>
+(function() { // don't leak
+    var elm = document.getElementById('num_frames'), // get the select
+        df = document.createDocumentFragment(); // create a document fragment to hold the options while we create them
+    for (var i = 1; i <= 50; i++) { // loop, i like 42.
+        var option = document.createElement('option'); // create the option element
+        option.value = i; // set the value property
+        option.appendChild(document.createTextNode(i)); // set the textContent in a safe way.
+        df.appendChild(option); // append the option to the document fragment
+    }
+    elm.appendChild(df); // append the document fragment to the DOM. this is the better way rather than setting innerHTML a bunch of times (or even once with a long string)
+}());
+(function() { // don't leak
+    var elm = document.getElementById('interleave'), // get the select
+        df = document.createDocumentFragment(); // create a document fragment to hold the options while we create them
+    for (var i = 1; i <= 15; i++) { // loop, i like 42.
+        var option = document.createElement('option'); // create the option element
+        option.value = i; // set the value property
+        option.appendChild(document.createTextNode(i)); // set the textContent in a safe way.
+        df.appendChild(option); // append the option to the document fragment
+    }
+    elm.appendChild(df); // append the document fragment to the DOM. this is the better way rather than setting innerHTML a bunch of times (or even once with a long string)
+}());
+</script>
+</body>
+</html>

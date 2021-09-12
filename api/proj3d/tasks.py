@@ -5,8 +5,9 @@ import datetime
 import zipfile
 import shutil
 
-from .celery import app
+from proj3d import celery 
 from extract_frames import extract_frames_from_video
+
 
 def zipdir(path, ziph):
     # ziph is zipfile handle
@@ -14,7 +15,12 @@ def zipdir(path, ziph):
         for file in files:
             ziph.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), os.path.join(path, '..')))
 
-@app.task()
+@celery.task()
+def make_file(fname, content):
+    with open(fname, "w") as f:
+        f.write(content)
+
+@celery.task()
 def reconstruct_3d_model(filename, type_of_extraction, extraction_number, interleaved_number, 
                         feature_quality, resolution_scale):
     cur_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
