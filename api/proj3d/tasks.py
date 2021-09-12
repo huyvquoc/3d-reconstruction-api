@@ -20,12 +20,16 @@ def make_file(fname, content):
     with open(fname, "w") as f:
         f.write(content)
 
-@celery.task()
-def reconstruct_3d_model(filename, type_of_extraction, extraction_number, interleaved_number, 
+@celery.task(bind=True)
+def reconstruct_3d_model(self, filename, type_of_extraction, extraction_number, interleaved_number, 
                         feature_quality, resolution_scale):
+    self.update_state(state='PROGRESS',
+                      meta={'step': "START", 'progress': 0, 'total': 7})
     cur_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     images_folder_name = "".join(["images_", cur_time])
     out_folder_name = "".join(["output_", cur_time])
+    self.update_state(state='PROGRESS',
+                      meta={'step': "EXTRACT FRAMES", 'progress': 1, 'total': 7})
     approx_focal = extract_frames_from_video(filename=filename,
                                             images_folder=images_folder_name,
                                             type_of_extraction=type_of_extraction, 
@@ -37,6 +41,8 @@ def reconstruct_3d_model(filename, type_of_extraction, extraction_number, interl
     start_time = time.time()
     # subprocess.run(['cd', '../openMVG'])
     # subprocess.run(['cd', './openMVG_Build/software/SfM'])
+    self.update_state(state='PROGRESS',
+                      meta={'step': "SFM GLOBAL PIPELINE", 'progress': 2, 'total': 7})
     print(os.getcwd())
     os.chdir('./openMVG_Build/software/SfM')
     openmvg_path = "/media/data-huy/3D_Reconstruction/Github/openMVG"
@@ -45,6 +51,8 @@ def reconstruct_3d_model(filename, type_of_extraction, extraction_number, interl
                                                        os.path.join(openmvg_path, out_folder_name),
                                                        str(approx_focal),
                                                        str(feature_quality)])
+    self.update_state(state='PROGRESS',
+                      meta={'step': "CONVERT OPENMVG TO OPENMVS", 'progress': 3, 'total': 7})
     os.chdir('../..')
     os.chdir('Linux-x86_64-RELEASE/')
     subprocess.run(['mkdir', os.path.join(openmvg_path, out_folder_name, 'stereo_vision')])
@@ -54,11 +62,19 @@ def reconstruct_3d_model(filename, type_of_extraction, extraction_number, interl
 
     os.environ["PATH"] += os.pathsep + "/media/data-huy/bin/OpenMVS"
     os.chdir(os.path.join('../..', out_folder_name, 'stereo_vision/'))
+    self.update_state(state='PROGRESS',
+                      meta={'step': "DENSIFY POINT CLOUD", 'progress': 4, 'total': 7})
     subprocess.run(['DensifyPointCloud', 'Scene.mvs'])
+    self.update_state(state='PROGRESS',
+                      meta={'step': "RECONSTRUCT MESH", 'progress': 5, 'total': 7})
     subprocess.run(['ReconstructMesh', 'Scene_dense.mvs'])
+    self.update_state(state='PROGRESS',
+                      meta={'step': "TEXTURE MESH", 'progress': 6, 'total': 7})
     subprocess.run(['TextureMesh', 'Scene_dense_mesh.mvs', ''.join(['--resolution-level=', str(resolution_scale)])])
     os.chdir('../..')
 
+    self.update_state(state='PROGRESS',
+                      meta={'step': "PREPARING FILE FOR DOWNLOAD", 'progress': 7, 'total': 7})
     end_time = time.time()
     hours, rem = divmod(end_time - start_time, 3600)
     minutes, seconds = divmod(rem, 60)
@@ -71,7 +87,8 @@ def reconstruct_3d_model(filename, type_of_extraction, extraction_number, interl
     shutil.rmtree("".join(["./", images_folder_name]), ignore_errors=True)
     os.chdir(cwd)
 
-    return "".join([out_folder_name, '.zip'])
+    return {'step': "RETURN OUTPUT FILE", 'progress': 100, 'total': 100, 
+            'output_file': "".join([out_folder_name, '.zip'])}
     # DOWNLOAD_FOLDER = os.getcwd()
     # print('[+] DOWNLOAD_FOLDER: ', DOWNLOAD_FOLDER)
     # app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER

@@ -3,13 +3,13 @@
 <body>
 <title>3D Reconstruction</title>
 <h1>3D Reconstruction</h1>
-<form method=post enctype="multipart/form-data">
-  <input type=file name=file> <br><br>
+<form class="uniform" method=post enctype="multipart/form-data">
+  <input type=file id="uploaded_file" name="file"> <br><br>
   <p>Choose type of frame extraction on the input video:</p>
   <input type="radio" id="direct_number" name="frame_extraction" value="direct_number">
   <label for="direct_number">First #n frames</label>
   <input type="radio" id="interleaved_number" name="frame_extraction" value="interleaved_number">
-  <label for="direct_number">Interleaved frames</label>
+  <label for="interleaved_number">Interleaved frames</label>
   <input type="radio" id="whole_video" name="frame_extraction" value="whole_video">
   <label for="whole_video">Whole video</label> <br><br>
   <label for="num_frames"> Specify the number of extracted frames (not necessary for "Whole video"):</label>
@@ -39,32 +39,122 @@
     <option value="2">2</option>
     <option value="3">3</option>
   </select> <br><br>
-  <input type=submit value=Upload>	
+  <input id="start-bg-job" type=submit value=Upload>	
 </form>
 
+<div id="progress">Progress</div>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/nanobar/0.2.1/nanobar.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script>
-(function() { // don't leak
-    var elm = document.getElementById('num_frames'), // get the select
-        df = document.createDocumentFragment(); // create a document fragment to hold the options while we create them
-    for (var i = 1; i <= 50; i++) { // loop, i like 42.
-        var option = document.createElement('option'); // create the option element
-        option.value = i; // set the value property
-        option.appendChild(document.createTextNode(i)); // set the textContent in a safe way.
-        df.appendChild(option); // append the option to the document fragment
-    }
-    elm.appendChild(df); // append the document fragment to the DOM. this is the better way rather than setting innerHTML a bunch of times (or even once with a long string)
-}());
-(function() { // don't leak
-    var elm = document.getElementById('interleave'), // get the select
-        df = document.createDocumentFragment(); // create a document fragment to hold the options while we create them
-    for (var i = 1; i <= 15; i++) { // loop, i like 42.
-        var option = document.createElement('option'); // create the option element
-        option.value = i; // set the value property
-        option.appendChild(document.createTextNode(i)); // set the textContent in a safe way.
-        df.appendChild(option); // append the option to the document fragment
-    }
-    elm.appendChild(df); // append the document fragment to the DOM. this is the better way rather than setting innerHTML a bunch of times (or even once with a long string)
-}());
+  console.log("Start script");
+
+  function start_reconstruct_task() {
+    console.log("Start reconstruct...");
+    // add task status elements 
+    div = $('<div class="progress"><div></div><div>0%</div><div>...</div><div>&nbsp;</div></div><hr>');
+    $('#progress').append(div);
+
+    // var filename = $('input[type=file]').val.toString().split('/').pop();
+    var filename = $('#uploaded_file')[0].files[0].name;
+    var type_of_extraction = document.querySelector('input[name="frame_extraction"]:checked').value;
+    var extraction_number = document.getElementById('num_frames').value;
+    var interleaved_number = document.getElementById('interleave').value;
+    var feature_quality = document.getElementById('feat').value;
+    var resolution_scale = document.getElementById('res').value;
+    var route_with_args = "/reconstruct3dmodel".concat('/', filename, '/', type_of_extraction, '/', extraction_number,
+                                                     '/', interleaved_number, '/', feature_quality, '/', resolution_scale);
+    console.log(filename)
+    console.log(type_of_extraction)
+    console.log(extraction_number)
+    console.log(interleaved_number)
+    console.log(feature_quality)
+    console.log(resolution_scale)
+    console.log(route_with_args)
+    // create a progress bar
+    var nanobar = new Nanobar({
+        bg: '#44f',
+        target: div[0].childNodes[0]
+    });
+
+    // send ajax POST request to start background job
+    $.ajax({
+        type: 'POST',
+        // url: '/reconstruct3dmodel', // TODO: How to assign arguments
+        url: route_with_args,
+        success: function(data, status, request) {
+            status_url = request.getResponseHeader('Location');
+            update_progress(status_url, nanobar, div[0]);
+        },
+        error: function() {
+            alert('Unexpected error');
+        }
+    });
+  }
+  function update_progress(status_url, nanobar, status_div) {
+    // send GET request to status URL
+    $.getJSON(status_url, function(data) {
+        // update UI
+        percent = parseInt(data['progress'] * 100 / data['total']);
+        nanobar.go(percent);
+        $(status_div.childNodes[1]).text(percent + '%');
+        $(status_div.childNodes[2]).text(data['step']);
+        if (data['state'] != 'PENDING' && data['state'] != 'PROGRESS') {
+            if ('output_file' in data) {
+                // show result
+                $(status_div.childNodes[3]).text('Result: ' + data['output_file']);
+            }
+            else {
+                // something unexpected happened
+                $(status_div.childNodes[3]).text('Result: ' + data['state']);
+            }
+        }
+        else {
+            // rerun in 2 seconds
+            setTimeout(function() {
+                update_progress(status_url, nanobar, status_div);
+            }, 2000);
+        }
+    });
+  }
+  // $(function() {
+  //   $('#start-bg-job').click(start_reconstruct_task);
+  // });
+  // $(document).ready(function() {
+  //   $('.uniform').submit(start_reconstruct_task);
+  // });
+  // https://stackoverflow.com/questions/18545941/jquerys-on-method-combined-with-the-submit-event
+  // https://stackoverflow.com/questions/12252378/capturing-a-form-submit-with-jquery-and-submit
+  $(document).on('submit','form.uniform',function(e){
+    // code
+    e.preventDefault(); // very important
+    alert('submitted!');
+    start_reconstruct_task();
+  });
+</script>
+<script>
+  (function() { // don't leak
+      var elm = document.getElementById('num_frames'), // get the select
+          df = document.createDocumentFragment(); // create a document fragment to hold the options while we create them
+      for (var i = 1; i <= 50; i++) { // loop, i like 42.
+          var option = document.createElement('option'); // create the option element
+          option.value = i; // set the value property
+          option.appendChild(document.createTextNode(i)); // set the textContent in a safe way.
+          df.appendChild(option); // append the option to the document fragment
+      }
+      elm.appendChild(df); // append the document fragment to the DOM. this is the better way rather than setting innerHTML a bunch of times (or even once with a long string)
+  }());
+  (function() { // don't leak
+      var elm = document.getElementById('interleave'), // get the select
+          df = document.createDocumentFragment(); // create a document fragment to hold the options while we create them
+      for (var i = 1; i <= 15; i++) { // loop, i like 42.
+          var option = document.createElement('option'); // create the option element
+          option.value = i; // set the value property
+          option.appendChild(document.createTextNode(i)); // set the textContent in a safe way.
+          df.appendChild(option); // append the option to the document fragment
+      }
+      elm.appendChild(df); // append the document fragment to the DOM. this is the better way rather than setting innerHTML a bunch of times (or even once with a long string)
+  }());
 </script>
 </body>
 </html>
