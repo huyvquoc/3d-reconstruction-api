@@ -9,7 +9,7 @@ from flask import jsonify
 from werkzeug.utils import secure_filename
 from pathlib import Path
 
-from .tasks import make_file, reconstruct_3d_model
+from .tasks import reconstruct_3d_model
 
 
 bp = Blueprint("all", __name__)
@@ -28,16 +28,6 @@ interleaved_number = None
 feature_quality = None
 resolution_scale = None
 approx_focal = None
-
-@bp.route("/index")
-def index():
-    return "Hello!"
-
-@bp.route("/<string:fname>/<string:content>")
-def makefile(fname, content):
-    fpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), fname)
-    make_file(fpath, content)
-    return f"Find your file @ <code>{fpath}</code>"
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -67,21 +57,6 @@ def upload_file():
            filename = secure_filename(file.filename)
            file.save(os.path.join(UPLOAD_FOLDER, filename))
            #return redirect(url_for('download_file', name=filename))
-           global type_of_extraction
-           global extraction_number
-           global interleaved_number
-           global feature_quality
-           global resolution_scale
-           type_of_extraction = request.form['frame_extraction']
-           extraction_number = request.form['num_frames']
-           interleaved_number = request.form['interleave']
-           feature_quality = request.form['feat']
-           resolution_scale = request.form['res']
-           print('[+] type of extraction: ', type_of_extraction)
-           print('[+] extraction_number: ', extraction_number)
-           print('[+] interleaving frame: ', interleaved_number)
-           print('[+] feature quality: ', feature_quality)
-           print('[+] resolution scale: ', resolution_scale)
            # global approx_focal
            # cwd = os.getcwd()
            # os.chdir('../openMVG')
@@ -91,10 +66,6 @@ def upload_file():
               # os.remove('./Output.zip')
            # down_file = reconstruct_3d_model.delay(filename, type_of_extraction, extraction_number, interleaved_number, 
            #                          feature_quality, resolution_scale)
-           # res = reconstruct_3d_model.delay(filename, type_of_extraction, extraction_number, interleaved_number,
-           #                    feature_quality, resolution_scale)
-
-           # return redirect(url_for('process_3d'))
            
            # app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
            # down_file = send_from_directory(app.config["DOWNLOAD_FOLDER"], 'Output.zip', as_attachment=True)
@@ -113,7 +84,7 @@ def download_file(filename):
     DOWNLOAD_FOLDER = os.path.join(parent_path, 'openMVG')
     print('[**] DOWNLOAD_FOLDER: ', DOWNLOAD_FOLDER)
     resp = send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
-    # os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
+    os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
     return resp
 
 @bp.route("/reconstruct3dmodel/<string:filename>/<string:type_of_extraction>/<int:extraction_number>/<int:interleaved_number>/<string:feature_quality>/<int:resolution_scale>", methods=['POST'])

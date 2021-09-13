@@ -15,11 +15,6 @@ def zipdir(path, ziph):
         for file in files:
             ziph.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), os.path.join(path, '..')))
 
-@celery.task()
-def make_file(fname, content):
-    with open(fname, "w") as f:
-        f.write(content)
-
 @celery.task(bind=True)
 def reconstruct_3d_model(self, filename, type_of_extraction, extraction_number, interleaved_number, 
                         feature_quality, resolution_scale):
@@ -45,7 +40,7 @@ def reconstruct_3d_model(self, filename, type_of_extraction, extraction_number, 
                       meta={'step': "SFM GLOBAL PIPELINE", 'progress': 2, 'total': 7})
     print(os.getcwd())
     os.chdir('./openMVG_Build/software/SfM')
-    openmvg_path = "/media/data-huy/3D_Reconstruction/Github/openMVG"
+    openmvg_path = "/media/data-huy/3D_Reconstruction/Github/openMVG" # TODO: change to the absolute path of the openMVG folder on your system
     out_folder_name = "".join(["output_", datetime.datetime.now().strftime("%Y%m%d-%H%M%S")])
     subprocess.run(['python', 'SfM_GlobalPipeline.py', os.path.join(openmvg_path, 'data', images_folder_name),
                                                        os.path.join(openmvg_path, out_folder_name),
@@ -60,7 +55,7 @@ def reconstruct_3d_model(self, filename, type_of_extraction, extraction_number, 
                                                       '-d', os.path.join(openmvg_path, out_folder_name, 'stereo_vision'), 
                                                       '-o', os.path.join(openmvg_path, out_folder_name, 'stereo_vision', 'Scene.mvs')])
 
-    os.environ["PATH"] += os.pathsep + "/media/data-huy/bin/OpenMVS"
+    os.environ["PATH"] += os.pathsep + "/media/data-huy/bin/OpenMVS" # TODO: change to the absolute path of the folder where the bin files of openMVS locate (the one that you specify when using openMVS)
     os.chdir(os.path.join('../..', out_folder_name, 'stereo_vision/'))
     self.update_state(state='PROGRESS',
                       meta={'step': "DENSIFY POINT CLOUD", 'progress': 4, 'total': 7})
@@ -91,10 +86,3 @@ def reconstruct_3d_model(self, filename, type_of_extraction, extraction_number, 
 
     return {'step': "RETURN OUTPUT FILE", 'progress': 100, 'total': 100, 
             'output_file': "".join([out_folder_name, '.zip'])}
-    # DOWNLOAD_FOLDER = os.getcwd()
-    # print('[+] DOWNLOAD_FOLDER: ', DOWNLOAD_FOLDER)
-    # app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
-    # down_file = send_from_directory(app.config["DOWNLOAD_FOLDER"], "".join([out_folder_name, '.zip']), as_attachment=True)
-    # os.chdir(cwd)
-
-    # return down_file
