@@ -83,6 +83,8 @@ def reconstruct_3d_model(self, filename, type_of_extraction, extraction_number, 
     zipf = zipfile.ZipFile("".join([out_folder_name, '.zip']), 'w', zipfile.ZIP_DEFLATED)
     zipdir(out_folder_name, zipf)
     zipf.close()
+    shutil.rmtree("".join(["./", out_folder_name]), ignore_errors=True)
+
     os.chdir('data')
     shutil.rmtree("".join(["./", images_folder_name]), ignore_errors=True)
     os.chdir(cwd)

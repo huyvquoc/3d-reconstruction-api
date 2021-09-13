@@ -112,7 +112,9 @@ def download_file(filename):
     print('[**] parent_path: ', parent_path)
     DOWNLOAD_FOLDER = os.path.join(parent_path, 'openMVG')
     print('[**] DOWNLOAD_FOLDER: ', DOWNLOAD_FOLDER)
-    return send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
+    resp = send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
+    # os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
+    return resp
 
 @bp.route("/reconstruct3dmodel/<string:filename>/<string:type_of_extraction>/<int:extraction_number>/<int:interleaved_number>/<string:feature_quality>/<int:resolution_scale>", methods=['POST'])
 def reconstruct3dmodel(filename, type_of_extraction, extraction_number, interleaved_number,
