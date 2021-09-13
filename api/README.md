@@ -14,18 +14,13 @@ It is necessary to activate the conda virtual environment (the one that you used
 Use the commands below to install packages/libraries:
 
 ```sh
-pip install opencv-python
-pip install Flask
-pip install Flask-Session
-pip install celery
-pip install redis
-pip install flower
+pip install -r requirements
 sudo apt-get install redis-server
 ```
 
 ## Multi-threading application
 
-- Step 1: First, you need to replace this ```api``` folder with the old ```api``` folder on your system.
+- Step 1: First, you need to replace the old ```api``` folder with this ```api``` folder on your system. And you also need to replace the ```extract_frames.py``` in the folder ```/openMVG/data```.
 
 - Step 2: Next, you need to export the ```PYTHONPATH``` so that the ```/openMVG/openMVG_Build/data/extract_frames.py``` can be found.
 
@@ -48,7 +43,7 @@ sudo apt-get install redis-server
     - ```--logfile``` should have end pattern like this ```var/log/celery/%n%I.log```
 
 	```sh
-	celery multi start 5 -A proj3d.celery -l INFO --pidfile=/media/data-huy/var/run/celery/%n.pid --logfile=/media/data-huy/var/log/celery/%n%I.log
+	celery multi start 5 -A proj3d -l INFO --pidfile=/media/data-huy/var/run/celery/%n.pid --logfile=/media/data-huy/var/log/celery/%n%I.log
 	```
 
 
@@ -61,12 +56,12 @@ sudo apt-get install redis-server
   - Terminal 3: for visualizing the workers
 
 	```sh
-	celery -A proj3d.celery flower
+	celery -A proj3d flower
 	```
 
 - Step 4: After having the 3 terminals, then you can open the web application (according the terminal 2) and try reconstructing 3d models. Moreover, you can also monitor the workers (Which workers do tasks? Which tasks are in process? Whether a task succeeds or fails? ...) by the host produced in the terminal 3.
 
 - Remember to stop the workers after using by this command (the ```--pidfile``` and ```--logfile``` must be set the same as above):
 	```sh
-	celery multi stop 5 -A proj3d.celery -l INFO --pidfile=/media/data-huy/var/run/celery/%n.pid --logfile=/media/data-huy/var/log/celery/%n%I.log
+	celery multi stop 5 -A proj3d -l INFO --pidfile=/media/data-huy/var/run/celery/%n.pid --logfile=/media/data-huy/var/log/celery/%n%I.log
 	```
