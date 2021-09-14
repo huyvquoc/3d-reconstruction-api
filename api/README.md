@@ -22,7 +22,16 @@ sudo apt-get install redis-server
 
 - Step 1: First, you need to replace the old ```api``` folder with this ```api``` folder on your system. And you also need to replace the ```extract_frames.py``` in the folder ```/openMVG/data```.
 
-- Step 2: Next, you need to export the ```PYTHONPATH``` so that the ```/openMVG/openMVG_Build/data/extract_frames.py``` can be found.
+- Step 2: In ```/api/proj3d/tasks.py```, update the paths of 2 TODO lines: line 43 and line 58.
+
+	![image](./images/todos.JPG)
+
+	- Line 43: change to the absolute path of the ```/openMVG``` folder on your system.
+
+	- Line 58: change to the absolute path of the folder where the bin files of openMVS locate (the one that you specify when building openMVS). For recognizing, there are some files in that folder such as ```DensifyPointCloud```, ```ReconstructMesh```, ```Viewer```, ...
+
+
+- Step 3: Next, you need to export the ```PYTHONPATH``` so that the ```/openMVG/openMVG_Build/data/extract_frames.py``` can be found.
 
 	```sh
 	export PYTHONPATH=$PYTHONPATH:<Absolute path to the "data" folder storing extract_frames.py>
@@ -34,7 +43,7 @@ sudo apt-get install redis-server
 	export PYTHONPATH=$PYTHONPATH:/media/data-huy/3D_Reconstruction/Github/openMVG/data
 	```
 
-- Step 3: To conduct a multi-threading run, we need 3 terminals (or 3 tabs in a terminal) which run simultaneously:
+- Step 4: To conduct a multi-threading run, we need 3 terminals (or 3 tabs in a terminal) which run simultaneously:
 
   - Change the working directory of each terminal to the ```api``` folder.
 
@@ -59,7 +68,7 @@ sudo apt-get install redis-server
 	celery -A proj3d flower
 	```
 
-- Step 4: After having the 3 terminals, then you can open the web application (according the terminal 2) and try reconstructing 3d models. Moreover, you can also monitor the workers (Which workers do tasks? Which tasks are in process? Whether a task succeeds or fails? ...) by the host produced in the terminal 3.
+- Step 5: After having the 3 terminals, then you can open the web application (according the terminal 2) and try reconstructing 3d models. Moreover, you can also monitor the workers (Which workers do tasks? Which tasks are in process? Whether a task succeeds or fails? ...) by the host produced in the terminal 3.
 
 - Remember to stop the workers after using by this command (the ```--pidfile``` and ```--logfile``` must be set the same as above):
 	```sh
