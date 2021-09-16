@@ -92,7 +92,7 @@ def reconstruct3dmodel(filename, type_of_extraction, extraction_number, interlea
                                     feature_quality, resolution_scale):
     task = reconstruct_3d_model.apply_async((filename, type_of_extraction, extraction_number, interleaved_number,
                                             feature_quality, resolution_scale))
-    return jsonify({}), 202, {'Location': url_for('all.taskstatus',
+    return jsonify({"task_id": task.id}), 202, {'Location': url_for('all.taskstatus',
                                                   task_id=task.id)}
 
 @bp.route("/status/<task_id>")
