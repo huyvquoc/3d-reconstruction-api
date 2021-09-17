@@ -34,66 +34,33 @@ def allowed_file(filename):
 	    filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @bp.route("/", methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        print('1')
-        global PROCESS_COMPLETE
-        PROCESS_COMPLETE = False
-        os.chdir(MAIN_WORKING_DIR)
-        # check if the post request has the file part
-        print('2')
-        if 'file' not in request.files:
-           flash('No file part')
-           return redirect(request.url)
-        file = request.files['file']
-        # If the user does not select a file, the browser submits an
-        # empty file without a filename.
-        print('3')
-        if file.filename == '':
-           flash('No selected file')
-           return redirect(request.url)
-        print('4')
-        if file and allowed_file(file.filename):
-           filename = secure_filename(file.filename)
-           file.save(os.path.join(UPLOAD_FOLDER, filename))
-           #return redirect(url_for('download_file', name=filename))
-           # global approx_focal
-           # cwd = os.getcwd()
-           # os.chdir('../openMVG')
-           # if Path('./output_images').is_dir():
-              # shutil.rmtree('./output_images')
-           # if Path('./Output.zip').is_file():
-              # os.remove('./Output.zip')
-           # down_file = reconstruct_3d_model.delay(filename, type_of_extraction, extraction_number, interleaved_number, 
-           #                          feature_quality, resolution_scale)
-           
-           # app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
-           # down_file = send_from_directory(app.config["DOWNLOAD_FOLDER"], 'Output.zip', as_attachment=True)
-           # os.chdir(MAIN_WORKING_DIR)
+def reconstruct3dmodel():
+    if request.method == 'GET':
+        return render_template('upload.html')
+    if 'file' not in request.files:
+        flash('No file part')
+        # return redirect(request.url)
 
-           # return down_file
+    file = request.files['file']
+    if file.filename == '':
+        flash('No selected file')
+        # return redirect(request.url)
 
-    return render_template('upload.html')
+    type_of_extraction = request.form['frame_extraction']
+    extraction_number = request.form['num_frames']
+    interleaved_number = request.form['interleave']
+    feature_quality = request.form['feat']
+    resolution_scale = request.form['res']
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(UPLOAD_FOLDER, filename))
 
-@bp.route("/downloads/<path:filename>")
-def download_file(filename):
-    path = Path(os.getcwd())
-    print('[**] path: ', path)
-    parent_path = path.parent.absolute()
-    print('[**] parent_path: ', parent_path)
-    DOWNLOAD_FOLDER = os.path.join(parent_path, 'openMVG')
-    print('[**] DOWNLOAD_FOLDER: ', DOWNLOAD_FOLDER)
-    resp = send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
-    os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
-    return resp
+        task = reconstruct_3d_model.apply_async((filename, type_of_extraction, extraction_number, interleaved_number,
+                                                feature_quality, resolution_scale))
 
-@bp.route("/reconstruct3dmodel/<string:filename>/<string:type_of_extraction>/<int:extraction_number>/<int:interleaved_number>/<string:feature_quality>/<int:resolution_scale>", methods=['POST'])
-def reconstruct3dmodel(filename, type_of_extraction, extraction_number, interleaved_number,
-                                    feature_quality, resolution_scale):
-    task = reconstruct_3d_model.apply_async((filename, type_of_extraction, extraction_number, interleaved_number,
-                                            feature_quality, resolution_scale))
-    return jsonify({"task_id": task.id}), 202, {'Location': url_for('all.taskstatus',
-                                                  task_id=task.id)}
+        return jsonify({"task_id": task.id}), 202, {'Location': url_for('all.taskstatus',
+                                                    task_id=task.id)}
 
 @bp.route("/status/<task_id>")
 def taskstatus(task_id):
@@ -123,3 +90,15 @@ def taskstatus(task_id):
             'total': 1
         }
     return jsonify(response)
+
+@bp.route("/downloads/<path:filename>")
+def download_file(filename):
+    path = Path(os.getcwd())
+    print('[**] path: ', path)
+    parent_path = path.parent.absolute()
+    print('[**] parent_path: ', parent_path)
+    DOWNLOAD_FOLDER = os.path.join(parent_path, 'openMVG')
+    print('[**] DOWNLOAD_FOLDER: ', DOWNLOAD_FOLDER)
+    resp = send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
+    os.remove(os.path.join(DOWNLOAD_FOLDER, filename))
+    return resp
