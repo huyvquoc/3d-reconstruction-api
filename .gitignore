@@ -1,3 +1,4 @@
 build/
 openMVG/openMVG_Build/
-openMVS_Build
+openMVG/output_*.zip
+openMVS_Build/
