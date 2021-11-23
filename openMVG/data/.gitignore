@@ -1,5 +1,6 @@
-*
+/*
 
 !.gitignore
 !extract_frames.py
-!unused/
+!/images/
+!/unused/
