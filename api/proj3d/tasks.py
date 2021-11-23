@@ -59,7 +59,7 @@ def reconstruct_3d_model(self, filename, type_of_extraction, extraction_number, 
     os.chdir(os.path.join('../..', out_folder_name, 'stereo_vision/'))
     self.update_state(state='PROGRESS',
                       meta={'step': "DENSIFY POINT CLOUD", 'progress': 4, 'total': 7})
-    subprocess.run(['DensifyPointCloud', 'Scene.mvs'])
+    subprocess.run(['DensifyPointCloud', 'Scene.mvs', '-v', '4'])
     self.update_state(state='PROGRESS',
                       meta={'step': "RECONSTRUCT MESH", 'progress': 5, 'total': 7})
     subprocess.run(['ReconstructMesh', 'Scene_dense.mvs'])
