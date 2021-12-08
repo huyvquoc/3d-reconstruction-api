@@ -41,6 +41,7 @@ def reconstruct_3d_model(self, filename, type_of_extraction, extraction_number, 
     print(os.getcwd())
     os.chdir('./openMVG_Build/software/SfM')
     openmvg_path = "/media/data-huy/3D_Reconstruction/Github/openMVG" # TODO: change to the absolute path of the openMVG folder on your system
+    # openmvg_path = "/opt/3dmodel/3D-Reconstruction/openMVG" # TODO: change to the absolute path of the openMVG folder on your system
     out_folder_name = "".join(["output_", datetime.datetime.now().strftime("%Y%m%d-%H%M%S")])
     subprocess.run(['python', 'SfM_GlobalPipeline.py', os.path.join(openmvg_path, 'data', images_folder_name),
                                                        os.path.join(openmvg_path, out_folder_name),
@@ -56,6 +57,7 @@ def reconstruct_3d_model(self, filename, type_of_extraction, extraction_number, 
                                                       '-o', os.path.join(openmvg_path, out_folder_name, 'stereo_vision', 'Scene.mvs')])
 
     os.environ["PATH"] += os.pathsep + "/media/data-huy/bin/OpenMVS" # TODO: change to the absolute path of the folder where the bin files of openMVS locate (the one that you specify when using openMVS)
+    # os.environ["PATH"] += os.pathsep + "/opt/3dmodel/3D-Reconstruction/bin/OpenMVS" # TODO: change to the absolute path of the folder where the bin files of openMVS locate (the one that you specify when using openMVS)
     os.chdir(os.path.join('../..', out_folder_name, 'stereo_vision/'))
     self.update_state(state='PROGRESS',
                       meta={'step': "DENSIFY POINT CLOUD", 'progress': 4, 'total': 7})
