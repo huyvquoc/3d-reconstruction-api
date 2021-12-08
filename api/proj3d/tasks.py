@@ -66,7 +66,15 @@ def reconstruct_3d_model(self, filename, type_of_extraction, extraction_number, 
     self.update_state(state='PROGRESS',
                       meta={'step': "TEXTURE MESH", 'progress': 6, 'total': 7})
     subprocess.run(['TextureMesh', 'Scene_dense_mesh.mvs', ''.join(['--resolution-level=', str(resolution_scale)])])
-    os.chdir('../..')
+
+    time.sleep(3)
+    for fname in os.listdir('.'):
+        if fname != 'Scene_dense_mesh_texture.ply' and fname != 'Scene_dense_mesh_texture.png':
+            os.remove(os.path.join('.', fname))
+    os.chdir('..')
+    shutil.rmtree('./matches/')
+    shutil.rmtree('./reconstruction_global/')
+    os.chdir('..')
 
     self.update_state(state='PROGRESS',
                       meta={'step': "PREPARING FILE FOR DOWNLOAD", 'progress': 7, 'total': 7})
