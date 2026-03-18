@@ -356,6 +356,3 @@ In the MeshLab interface:
 - Now, you can use left mouse to rotate the reconstructed 3D model to view different sides of the object.
 
 ![image](./images/3d_model.JPG)
-
-
-# The end
